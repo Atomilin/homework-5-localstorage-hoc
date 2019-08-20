@@ -1,34 +1,24 @@
 import React, { Component } from 'react';
 import { load, save } from '../../localstorage';
 
-const withLocalstorage = (key, defaultData) => (WrappedComponent) => {
-    return class HOCLocalStorage extends Component {
-        constructor(props) {
-            super(props);
+const withLocalstorage = (key, defaultData) => Component =>
+  class HOCLocalStorage extends React.Component {
+    saveData = data => {
+      save(key, data);
+      this.forceUpdate();
+    };
 
-            this.key = key;
-            this.data = load(key);
-            this.state = {
-                newData: []
-            };
-        }
-        
-        loadData = () => {
-            return load(key) || defaultData
-        };
+    render() {
+      const loadedData = load(key);
 
-        updateData = (data) => {
-            save(key, data);
-            this.setState({
-                newData: load(key)
-            })
-        };
-
-        render() {
-            return <WrappedComponent savedData={this.loadData()} updateData={this.updateData}/>
-        }
+      return (
+        <Component
+          saveData={this.saveData}
+          savedData={loadedData ? loadedData : defaultData}
+          {...this.props}
+        />
+      );
     }
-};
-
+  };
 
 export default withLocalstorage;
